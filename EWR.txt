@@ -1,0 +1,52 @@
+{
+   'nb_drones':2,
+   'start_hub':{
+      'name':'start',
+      'coords':(0,0),
+      'metadata':{
+         'color':'green'
+      }
+   },
+   'waypoint1':{
+      'coords':(1,0),
+      'metadata':{
+         'color':'blue'
+      }
+   },
+   'waypoint2':{
+      'coords':(2,0),
+      'metadata':{
+         'color':'blue'
+      }
+   },
+   'end_hub':{
+      'name':'goal',
+      'coords':(3,0),
+      'metadata':{
+         'color':'red'
+      }
+   },
+   'connections':[
+      {
+         'pair':('start',
+         'waypoint1'),
+         'metadata':{
+            
+         }
+      },
+      {
+         'pair':('waypoint1',
+         'waypoint2'),
+         'metadata':{
+            
+         }
+      },
+      {
+         'pair':('waypoint2',
+         'goal'),
+         'metadata':{
+            
+         }
+      }
+   ]
+}
