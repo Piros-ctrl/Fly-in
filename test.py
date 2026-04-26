@@ -104,7 +104,7 @@ def parse_file(file):
                 if "start_hub" in argument_dict:
                     raise ValueError(f"Line {line_num}: 'start_hub' cannot be duplicated in the same file")
                 name, x, y, metadata = parse_hub_line(line, line_num)
-                argument_dict["start_hub"] = {"name": name, "coords": (x, y), "metadata": metadata}
+                argument_dict["start"] = {"coords": (x, y), "metadata": metadata}
                 zones.append(name)
 
             # --- end_hub ---
@@ -112,7 +112,7 @@ def parse_file(file):
                 if "end_hub" in argument_dict:
                     raise ValueError(f"Line {line_num}: 'end_hub' cannot be duplicated in the same file")
                 name, x, y, metadata = parse_hub_line(line, line_num)
-                argument_dict["end_hub"] = {"name": name, "coords": (x, y), "metadata": metadata}
+                argument_dict["goal"] = {"coords": (x, y), "metadata": metadata}
                 zones.append(name)
 
             # --- hub ---
@@ -177,9 +177,9 @@ def parse_file(file):
     # Final structural checks
     if "nb_drones" not in argument_dict:
         raise ValueError("Missing required 'nb_drones' definition (must be the first line)")
-    if "start_hub" not in argument_dict:
+    if "start" not in argument_dict:
         raise ValueError("Missing required 'start_hub' definition")
-    if "end_hub" not in argument_dict:
+    if "goal" not in argument_dict:
         raise ValueError("Missing required 'end_hub' definition")
 
     argument_dict["connections"] = connections
