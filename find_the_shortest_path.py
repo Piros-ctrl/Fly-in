@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # from test import parse_file
 # from math import sqrt
 
@@ -6,6 +7,15 @@
 #     current_x, current_y = current_node
 #     goal_x, goal_y = goal_node
 #     return sqrt((current_x - goal_x)**2+(current_y - goal_y)**2)
+=======
+from math import sqrt
+
+
+def calculate_estimate_distance(current_node, goal_node):
+    current_x, current_y = current_node
+    goal_x, goal_y = goal_node
+    return sqrt((current_x - goal_x)**2+(current_y - goal_y)**2)
+>>>>>>> 46dc933 (++)
 
 
 # def calculate_shortest_path(parsed_config):
@@ -41,6 +51,7 @@
 
 
 
+<<<<<<< HEAD
 
 
 
@@ -86,6 +97,21 @@ def calculate_g_cost(zone, neighbor, parsed_config, g_costs):
     tentative_g = g_costs[zone] + edge_cost
 
     # only update if we found a cheaper path
+=======
+def calculate_g_cost(zone, neighbor, parsed_config, g_costs):
+    if "zone" in parsed_config[neighbor]["metadata"]:
+        if parsed_config[neighbor]["metadata"]["zone"] == "restricted":
+            truns_number = 2
+        if parsed_config[neighbor]["metadata"]["zone"] == "priority":
+            truns_number = 1
+        if parsed_config[neighbor]["metadata"]["zone"] == "blocked":
+            truns_number = float('inf')
+    else:
+        truns_number = 1
+
+    tentative_g = g_costs[zone] + truns_number
+
+>>>>>>> 46dc933 (++)
     updated = False
     if tentative_g < g_costs[neighbor]:
         g_costs[neighbor] = tentative_g
@@ -95,6 +121,7 @@ def calculate_g_cost(zone, neighbor, parsed_config, g_costs):
 
 
 def initialize_g_costs(nodes_dict):
+<<<<<<< HEAD
     """
     Initialize g costs — 0 for start, infinity for all others
 
@@ -104,6 +131,8 @@ def initialize_g_costs(nodes_dict):
     Returns:
         g_costs    : dict {node_name: g_cost}
     """
+=======
+>>>>>>> 46dc933 (++)
     g_costs = {node: float('inf') for node in nodes_dict}
     g_costs["start"] = 0
     return g_costs
@@ -117,8 +146,13 @@ def calculate_shortest_path(parsed_config):
         if isinstance(value, dict) and "coords" in value:
             nodes_dict[key] = value
 
+<<<<<<< HEAD
     # initialize g costs
     g_costs = initialize_g_costs(nodes_dict)
+=======
+    g_costs = initialize_g_costs(nodes_dict)
+    # print(parsed_config)
+>>>>>>> 46dc933 (++)
 
     for zone in nodes_dict:
         neighbors = []
@@ -139,6 +173,10 @@ def calculate_shortest_path(parsed_config):
             h = calculate_estimate_distance(neighbor_coords, goal_coords)
             f = tentative_g + h
 
+<<<<<<< HEAD
             status = "✅ updated" if updated else "⏭️  skipped"
+=======
+            status = "updated" if updated else "skipped"
+>>>>>>> 46dc933 (++)
             print(f"  {neighbor} -> g={tentative_g:.1f}, h={h:.1f}, f={f:.1f} {status}")
         
