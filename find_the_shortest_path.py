@@ -1,3 +1,4 @@
+import heapq
 from math import sqrt
 
 
@@ -5,35 +6,6 @@ def calculate_estimate_distance(current_node, goal_node):
     current_x, current_y = current_node
     goal_x, goal_y = goal_node
     return sqrt((current_x - goal_x)**2+(current_y - goal_y)**2)
-
-
-# def calculate_shortest_path(parsed_config):
-#     connections = parsed_config["connections"]
-#     nodes_dict = {}
-#     neighbors = []
-
-#     for key, value in parsed_config.items():
-#         if isinstance(value, dict) and "coords" in value:
-#             nodes_dict[key] = value
-
-#     for zone, drone_parametre in nodes_dict.items():
-#         print(zone)
-#         for connection in connections:
-#             if zone in connection["pair"]:
-#                 possible_n1, possible_n2 = connection["pair"]
-#                 if possible_n1 == zone:
-#                     neighbors.append(possible_n2)
-#                 elif possible_n2 == zone:       # ← fixed condition
-#                     neighbors.append(possible_n1)  # ← fixed append
-
-#         for neighbor in neighbors:
-#             neighb_coords = parsed_config[neighbor]["coords"]
-#             goal_coords = parsed_config["goal"]["coords"]
-#             h = calculate_estimate_distance(neighb_coords, goal_coords)
-#             print(h)
-#         neighbors = []
-
-
 
 def calculate_g_cost(zone, neighbor, parsed_config, g_costs):
     if "zone" in parsed_config[neighbor]["metadata"]:
@@ -57,49 +29,67 @@ def calculate_g_cost(zone, neighbor, parsed_config, g_costs):
 
 
 def initialize_g_costs(nodes_dict):
-    """
-    Initialize g costs — 0 for start, infinity for all others
-
-    Args:
-        nodes_dict : dict of all nodes extracted from parsed_config
-
-    Returns:
-        g_costs    : dict {node_name: g_cost}
-    """
     g_costs = {node: float('inf') for node in nodes_dict}
     g_costs["start"] = 0
     return g_costs
 
 
+def translate_path(come_from):
+    path = ["goal"]
+    current = come_from["goal"]
+    while current != "start":
+        current = come_from[current]
+        path.append(current)
+    path.reverse()
+    return path
+
+
 def calculate_shortest_path(parsed_config):
     connections = parsed_config["connections"]
     nodes_dict  = {}
+    open_list = []
+    come_from = {}
 
     for key, value in parsed_config.items():
         if isinstance(value, dict) and "coords" in value:
             nodes_dict[key] = value
 
     g_costs = initialize_g_costs(nodes_dict)
-    # print(parsed_config)
+    goal_coords = parsed_config["goal"]["coords"]
+    start_coords = parsed_config["start"]["coords"]
+    start_h = calculate_estimate_distance(start_coords, goal_coords)
+    heapq.heappush(open_list, (start_h, "start"))
+    
+    visited = set()
+    
+    while open_list:
+        content_f, zone = heapq.heappop(open_list)
 
-    for zone in nodes_dict:
+        if zone == "goal":
+            return translate_path(come_from)
+
+        if zone in visited:
+            continue
+        visited.add(zone)
+
         neighbors = []
         for connection in connections:
             if zone in connection["pair"]:
-                n1, n2 = connection["pair"]
-                if n1 == zone:
-                    neighbors.append(n2)
-                elif n2 == zone:
-                    neighbors.append(n1)
+                possible_neighb1, possible_neighb2 = connection["pair"]
+                neighbors.append(
+                    possible_neighb2 if possible_neighb1 == zone else possible_neighb1
+                    )
 
-        print(f"{zone} | g={g_costs[zone]}")
         for neighbor in neighbors:
-            tentative_g, updated = calculate_g_cost(zone, neighbor, parsed_config, g_costs)
-
+            if neighbor in visited:
+                pass
+        tentative_g, updated = calculate_g_cost(
+            zone, neighbor, parsed_config, g_costs
+            )
+        if updated:
+            come_from[neighbor] = zone
             neighbor_coords = parsed_config[neighbor]["coords"]
-            goal_coords     = parsed_config["goal"]["coords"]
             h = calculate_estimate_distance(neighbor_coords, goal_coords)
             f = tentative_g + h
-
-            status = "✅ updated" if updated else "⏭️  skipped"
-            print(f"{neighbor} -> g={tentative_g:.1f}, h={h:.1f}, f={f:.1f} {status}")
+            heapq.heappush(open_list, (f, neighbor))
+    return []

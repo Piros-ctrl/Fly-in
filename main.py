@@ -8,9 +8,8 @@ def main():
     try:
         config = argv[-1]
         x = parse_file(config)
-        calculate_shortest_path(x)
+        print(calculate_shortest_path(x))
     except BaseException as e:
         print(e)
-
 
 main()
