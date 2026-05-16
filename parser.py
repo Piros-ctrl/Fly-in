@@ -51,6 +51,5 @@ def parse_file(file):
                     conections.append(zone[0]+"-"+zone[1])
                 else:
                     raise ValueError("Connections must link only predefined zones")
-                
     argument_dict["conections"] = conections
     return argument_dict
