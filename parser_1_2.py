@@ -81,6 +81,7 @@ def parse_file(file):
     connections = []
 
     with open(file, 'r') as infos:
+        s_and_e = []
         for line_num, raw_line in enumerate(infos, start=1):
             line = raw_line.strip()
 
@@ -104,16 +105,18 @@ def parse_file(file):
                 if "start_hub" in argument_dict:
                     raise ValueError(f"Line {line_num}: 'start_hub' cannot be duplicated in the same file")
                 name, x, y, metadata = parse_hub_line(line, line_num)
-                argument_dict["start"] = {"coords": (x, y), "metadata": metadata}
+                argument_dict[name] = {"coords": (x, y), "metadata": metadata}
                 zones.append(name)
+                s_and_e.append(name)
 
             # --- end_hub ---
             elif line.startswith("end_hub"):
                 if "end_hub" in argument_dict:
                     raise ValueError(f"Line {line_num}: 'end_hub' cannot be duplicated in the same file")
                 name, x, y, metadata = parse_hub_line(line, line_num)
-                argument_dict["goal"] = {"coords": (x, y), "metadata": metadata}
+                argument_dict[name] = {"coords": (x, y), "metadata": metadata}
                 zones.append(name)
+                s_and_e.append(name)
 
             # --- hub ---
             elif line.startswith("hub"):
@@ -177,20 +180,12 @@ def parse_file(file):
     # Final structural checks
     if "nb_drones" not in argument_dict:
         raise ValueError("Missing required 'nb_drones' definition (must be the first line)")
-    if "start" not in argument_dict:
+    if s_and_e[0] not in argument_dict:
         raise ValueError("Missing required 'start_hub' definition")
-    if "goal" not in argument_dict:
+    if s_and_e[1] not in argument_dict:
         raise ValueError("Missing required 'end_hub' definition")
 
     argument_dict["connections"] = connections
+    argument_dict["start_end"] = s_and_e
     return argument_dict
 
-
-if __name__ == "__main__":
-    import json
-    result = parse_file("drone_config.txt")
-    print(json.dumps(
-        {k: v for k, v in result.items()},
-        indent=2,
-        default=str  # handles tuples
-    ))

@@ -37,7 +37,7 @@ class AStar:
 
         return path
 
-    def search(self, start, goal="goal"):
+    def search(self, start, goal):
         open_list = []
         visited = set()
         came_from = {}

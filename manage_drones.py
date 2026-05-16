@@ -10,8 +10,8 @@ class DroneSimulation:
         self.graph = Graph(config)
         self.pathfinder = AStar(self.graph)
 
-        self.start = "start"
-        self.goal = "goal"
+        self.start = config["start_end"][0]
+        self.goal = config["start_end"][1]
 
         self.nb_drones = config["nb_drones"]
 
@@ -37,7 +37,7 @@ class DroneSimulation:
             self.occupancy[zone_name] = 0
 
     def initialize_drones(self):
-        start_path = self.pathfinder.search(self.start)
+        start_path = self.pathfinder.search(self.start, self.goal)
 
         for drone_id in range(self.nb_drones):
             drone = Drone(
