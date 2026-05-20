@@ -72,6 +72,7 @@ class AStar:
                     continue
 
                 zone_cost = self.graph.get_zone(neighbor).get_cost()
+                zone_extra_check = self.graph.get_zone(neighbor).get_priority()
 
                 tentative_g = g_costs[current_zone] + zone_cost
 
@@ -80,7 +81,7 @@ class AStar:
                     came_from[neighbor] = current_zone
 
                     h = self.heuristic(neighbor, goal)
-                    f = tentative_g + h
+                    f = tentative_g + h + zone_extra_check
 
                     ref += 1
 

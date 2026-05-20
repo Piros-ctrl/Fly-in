@@ -1,6 +1,7 @@
 from sys import argv
 from parser_1_2 import parse_file
 from manage_drones import DroneSimulation
+from pyqt import SimulationWindow
 
 
 def main():
@@ -8,7 +9,9 @@ def main():
         config = argv[-1]
         x = parse_file(config)
         dron = DroneSimulation(x)
-        dron.run()
+        sum = SimulationWindow(dron)
+        sum.mainloop()
+        # dron.run()
     except BaseException as e:
         print(e)
 

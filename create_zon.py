@@ -4,8 +4,11 @@ class Zone:
         self.coords = coords
         self.metadata = metadata
 
+    def get_zone_type(self):
+        return self.metadata.get("zone")
+
     def get_cost(self):
-        zone_type = self.metadata.get("zone")
+        zone_type = self.get_zone_type()
 
         if zone_type == "restricted":
             return 2
@@ -14,6 +17,12 @@ class Zone:
             return float("inf")
 
         return 1
+    
+    def get_priority(self):
+        zone_type = self.get_zone_type()
+        if zone_type == "priority":
+            return -0.5
+        return 0
 
     def get_capacity(self):
         return self.metadata.get("max_drones", 1)

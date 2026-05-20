@@ -1,8 +1,9 @@
 def parse_metadata(meta_str, line_num):
     meta_str = meta_str.strip()
     if not meta_str.startswith('[') or not meta_str.endswith(']'):
-        raise ValueError(f"Line {line_num}: Invalid metadata block syntax: '{meta_str}'")
-    
+        raise ValueError(f"Line {line_num}: Invalid metadata "
+                         f"block syntax: '{meta_str}'")
+
     inner = meta_str[1:-1].strip()
     if not inner:
         return {}
@@ -10,10 +11,14 @@ def parse_metadata(meta_str, line_num):
     metadata = {}
     for token in inner.split():
         if '=' not in token:
-            raise ValueError(f"Line {line_num}: Invalid metadata token '{token}', expected key=value format")
+            raise ValueError(
+                f"Line {line_num}: Invalid metadata token "
+                f"'{token}', expected key=value format")
         key, _, value = token.partition('=')
         if not key or not value:
-            raise ValueError(f"Line {line_num}: Invalid metadata token '{token}', key or value is empty")
+            raise ValueError(
+                f"Line {line_num}: Invalid metadata token "
+                f"'{token}', key or value is empty")
         metadata[key] = value
 
     return metadata

@@ -1,6 +1,7 @@
 from graph_generation import Graph
 from a_star_algorithme import AStar
 from creat_drone import Drone
+from pprint import pprint
 
 
 class DroneSimulation:
@@ -25,6 +26,7 @@ class DroneSimulation:
         self.initialize_capacities()
         self.initialize_occupancy()
         self.initialize_drones()
+        pprint(self.config, compact=True)
 
     def initialize_capacities(self):
         for zone_name, zone in self.graph.zones.items():
@@ -99,7 +101,7 @@ class DroneSimulation:
 
         drone.move_to(best_neighbor)
 
-        new_path = self.pathfinder.search(best_neighbor)
+        new_path = self.pathfinder.search(best_neighbor, self.goal)
 
         if new_path:
             drone.set_new_path(new_path)
@@ -122,6 +124,14 @@ class DroneSimulation:
         if drone.position == self.goal:
             drone.finished = True
             self.finished += 1
+
+    def run_one_turn(self):
+        edge_usage = {}
+
+        for drone in self.drones:
+            self.update_drone(drone, edge_usage)
+
+        self.turns += 1
 
     def run(self):
         while self.finished < self.nb_drones:
