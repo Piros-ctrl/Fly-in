@@ -12,7 +12,6 @@ class SimulationWindow(tk.Tk):
         self.configure(bg="gray")
 
         tk.Label(
-            self,
             text="Drone Routing Simulation",
             bg="#0f172a",
             fg="white",
@@ -31,8 +30,6 @@ class SimulationWindow(tk.Tk):
         self.compute_bounds()
 
         self.run()
-
-    # ---------------- DATA ----------------
 
     def load_data(self):
         for name, zone in self.simulation.graph.zones.items():
@@ -53,13 +50,13 @@ class SimulationWindow(tk.Tk):
     # ---------------- TRANSFORM ----------------
 
     def to_screen(self, x, y):
-        w = self.canvas.winfo_width() or 1000
-        h = self.canvas.winfo_height() or 700
+        w = self.canvas.winfo_width()
+        h = self.canvas.winfo_height()
 
         scale = min(
             w / (self.max_x - self.min_x + 1),
             h / (self.max_y - self.min_y + 1)
-        ) * 0.85
+        ) * 0.90
 
         cx = (self.min_x + self.max_x) / 2
         cy = (self.min_y + self.max_y) / 2
@@ -95,6 +92,8 @@ class SimulationWindow(tk.Tk):
         for name, (bx, by) in self.nodes.items():
             x, y = self.to_screen(bx, by)
             color = self.zone_color[name]
+            if color.lower() == "rainbow":
+                color = "aqua"
 
             r = 14
             self.canvas.create_oval(x-r, y-r, x+r, y+r,

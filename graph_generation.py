@@ -6,12 +6,11 @@ class Graph:
         self.config = config
         self.zones = {}
         self.connections = config["connections"]
-
         self._load_zones()
 
     def _load_zones(self):
         for key, value in self.config.items():
-            if isinstance(value, dict) and "coords" in value:
+            if isinstance(value, dict):
                 self.zones[key] = Zone(
                     key,
                     value["coords"],
@@ -50,4 +49,4 @@ class Graph:
                     {}
                 ).get("max_link_capacity", 1)
 
-        return 1
+        return 0

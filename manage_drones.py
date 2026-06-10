@@ -1,7 +1,6 @@
 from graph_generation import Graph
 from a_star_algorithme import AStar
 from creat_drone import Drone
-from pprint import pprint
 
 
 class DroneSimulation:
@@ -26,7 +25,6 @@ class DroneSimulation:
         self.initialize_capacities()
         self.initialize_occupancy()
         self.initialize_drones()
-        pprint(self.config, compact=True)
 
     def initialize_capacities(self):
         for zone_name, zone in self.graph.zones.items():
@@ -41,7 +39,7 @@ class DroneSimulation:
     def initialize_drones(self):
         start_path = self.pathfinder.search(self.start, self.goal)
 
-        for drone_id in range(self.nb_drones):
+        for drone_id in range(1, self.nb_drones + 1):
             drone = Drone(
                 drone_id,
                 self.start,
@@ -49,8 +47,6 @@ class DroneSimulation:
             )
 
             self.drones.append(drone)
-
-        self.occupancy[self.start] = self.nb_drones
 
     def move_drone(self, drone, next_node, edge_usage):
         edge = (drone.position, next_node)
@@ -93,7 +89,7 @@ class DroneSimulation:
 
         best_neighbor = min(
             available_neighbors,
-            key=lambda node: self.occupancy[node]
+            key=lambda node: self.occupancy[node]  # small interaction
         )
 
         self.occupancy[drone.position] -= 1
@@ -104,7 +100,7 @@ class DroneSimulation:
         new_path = self.pathfinder.search(best_neighbor, self.goal)
 
         if new_path:
-            drone.set_new_path(new_path)
+            drone.set_new_path(new_path)  # small interaction
 
     def update_drone(self, drone, edge_usage):
         if drone.finished:
@@ -129,17 +125,18 @@ class DroneSimulation:
         edge_usage = {}
 
         for drone in self.drones:
+            print(f" D{drone.id}-", end="")
+            if drone.path[drone.path_index] == self.goal:
+                print(self.goal, end="")
+                continue
+            else:
+                print(f"{drone.path[drone.path_index + 1]}", end="")
             self.update_drone(drone, edge_usage)
+        print()
 
         self.turns += 1
 
     def run(self):
         while self.finished < self.nb_drones:
-            self.turns += 1
-
-            edge_usage = {}
-
-            for drone in self.drones:
-                self.update_drone(drone, edge_usage)
-
+            self.run_one_turn()
         print(f"number of turns : {self.turns}")

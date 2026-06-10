@@ -5,7 +5,7 @@ class Zone:
         self.metadata = metadata
 
     def get_zone_type(self):
-        return self.metadata.get("zone")
+        return self.metadata.get("zone", "normal")
 
     def get_cost(self):
         zone_type = self.get_zone_type()
@@ -17,7 +17,7 @@ class Zone:
             return float("inf")
 
         return 1
-    
+
     def get_priority(self):
         zone_type = self.get_zone_type()
         if zone_type == "priority":
