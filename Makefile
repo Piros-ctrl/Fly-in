@@ -4,10 +4,6 @@ MAP = maps/easy/01_linear_path.txt
 
 .PHONY: install run debug clean lint lint-strict
 
-install:
-	@echo "Installing dependencies..."
-	@uv sync
-
 run:
 	@echo "Running simulation..."
 	$(PYTHON) $(MODULE) $(MAP)

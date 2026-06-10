@@ -19,6 +19,15 @@ class SimulationWindow(tk.Tk):
             pady=10
         ).pack(fill=tk.X)
 
+        self.turn_label = tk.Label(
+            self,
+            text="Turn Number: 0",
+            bg="#0f172a",
+            fg="white",
+            font=("Arial", 12, "bold")
+        )
+        self.turn_label.pack(fill=tk.X)
+
         self.canvas = tk.Canvas(self, bg="#111827", highlightthickness=0)
         self.canvas.pack(fill=tk.BOTH, expand=True)
 
@@ -47,8 +56,6 @@ class SimulationWindow(tk.Tk):
         self.min_x, self.max_x = min(xs), max(xs)
         self.min_y, self.max_y = min(ys), max(ys)
 
-    # ---------------- TRANSFORM ----------------
-
     def to_screen(self, x, y):
         w = self.canvas.winfo_width()
         h = self.canvas.winfo_height()
@@ -66,11 +73,12 @@ class SimulationWindow(tk.Tk):
             (y - cy) * scale + h / 2
         )
 
-    # ---------------- LOOP ----------------
-
     def run(self):
         if self.simulation.finished < self.simulation.nb_drones:
             self.simulation.run_one_turn()
+            self.turn_label.config(
+                text=f"Turn Number: {self.simulation.turns}"
+            )
 
         self.draw()
         self.after(900, self.run)
