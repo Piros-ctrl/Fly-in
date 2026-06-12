@@ -12,6 +12,7 @@ class SimulationWindow(tk.Tk):
         self.configure(bg="gray")
 
         tk.Label(
+            self,
             text="Drone Routing Simulation",
             bg="#0f172a",
             fg="white",

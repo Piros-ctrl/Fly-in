@@ -5,9 +5,15 @@ class Drone:
         self.path = path
         self.path_index = 0
         self.finished = False
+        self.turns_remaining = 0
+        self.next_position = None
+        self.in_edge = False
 
     def next_node(self):
         return self.path[self.path_index + 1]
+
+    def is_in_transit(self):
+        return self.turns_remaining > 0
 
     def move_to(self, zone_name):
         self.position = zone_name
