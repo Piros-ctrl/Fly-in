@@ -5,7 +5,9 @@ test = Tk()
 test.title("Created By The One And The Only OABDERRA")
 test.geometry("1920x1080")
 test.configure(bg="gray")
-lbl = Label(test, text="Just tring", bg="darkred", fg="green", pady=10, padx=10)
+lbl = Label(
+    test, text="Just tring", bg="darkred", fg="green", pady=10, padx=10
+            )
 # button = Button(test, text="Click here", command=exit)
 # button.pack()
 # lbl.place(x=0, y=1)

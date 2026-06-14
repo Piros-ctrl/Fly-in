@@ -7,7 +7,6 @@ class Drone:
         self.finished = False
         self.turns_remaining = 0
         self.next_position = None
-        self.in_edge = False
 
     def next_node(self):
         return self.path[self.path_index + 1]

@@ -13,7 +13,7 @@ def main():
     sum.mainloop()
     dron.run()
     # except BaseException as e:
-    #     print(e)
+        # print(e)
 
 
 main()

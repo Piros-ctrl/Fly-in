@@ -1,6 +1,7 @@
 from graph_generation import Graph
 from a_star_algorithme import AStar
 from creat_drone import Drone
+import sys
 
 
 class DroneSimulation:
@@ -35,9 +36,14 @@ class DroneSimulation:
     def initialize_occupancy(self):
         for zone_name in self.graph.zones:
             self.occupancy[zone_name] = 0
+        self.occupancy[self.start] = self.nb_drones
 
     def initialize_drones(self):
         start_path = self.pathfinder.search(self.start, self.goal)
+
+        if not start_path:
+            print("No path found recheck you map")
+            sys.exit()
 
         for drone_id in range(1, self.nb_drones + 1):
             drone = Drone(
@@ -62,36 +68,39 @@ class DroneSimulation:
 
             edge_usage[edge] = used + 1
 
-            if not drone.in_edge:
-                self.occupancy[drone.position] -= 1
+            self.occupancy[drone.position] -= 1
+
+            drone.next_position = next_node
 
             if cost > 1:
-                drone.next_position = next_node
-                drone.turns_remaining = 1
-                drone.in_edge = True
+                drone.turns_remaining = cost - 1
             else:
-                drone.in_edge = False
                 self.occupancy[next_node] += 1
                 drone.move_to(next_node)
                 drone.advance_path()
+                drone.next_position = None
 
             return True
 
         return False
 
-    def reroute_drone(self, drone):
+    def reroute_drone(self, drone, edge_usage):
         neighbors = self.graph.get_neighbors(drone.position)
+        still_remaning = len(drone.path) - drone.path_index
 
         available_neighbors = []
 
         for neighbor in neighbors:
+            edge = (drone.position, neighbor)
+            edge_capacity = self.graph.get_edge_capacity(edge)
+            used = edge_usage.get(edge, 0)
             if (
                 self.occupancy[neighbor] < self.capacity[neighbor]
-                and
-                neighbor != drone.next_node()
+                and neighbor != drone.next_node()
+                and used < edge_capacity
             ):
                 new_path = self.pathfinder.search(neighbor, self.goal)
-                if new_path:
+                if new_path and len(new_path) <= still_remaning:
                     available_neighbors.append(neighbor)
 
         if not available_neighbors:
@@ -102,13 +111,16 @@ class DroneSimulation:
             key=lambda node: self.occupancy[node]
         )
 
-        new_path = self.pathfinder.search(best_neighbor)
+        new_path = self.pathfinder.search(best_neighbor, self.goal)
 
-        self.occupancy[drone.position] -= 1
-        self.occupancy[best_neighbor] += 1
-
-        drone.move_to(best_neighbor)
         drone.set_new_path(new_path)
+        self.move_drone(drone, best_neighbor, edge_usage)
+
+    def can_move(self, drone, next_node):
+        return (
+            not drone.is_in_transit()
+            and self.occupancy[next_node] < self.capacity[next_node]
+        )
 
     def update_drone(self, drone, edge_usage):
         if drone.finished:
@@ -117,18 +129,26 @@ class DroneSimulation:
         if drone.is_in_transit():
             drone.turns_remaining -= 1
             if drone.turns_remaining == 0:
-                self.occupancy[drone.next_position] += 1
                 drone.move_to(drone.next_position)
                 drone.advance_path()
                 drone.next_position = None
                 drone.in_edge = False
+
+                if drone.position == self.goal:
+                    drone.finished = True
+                    self.finished += 1
             return
 
         next_node = drone.next_node()
-        moved = self.move_drone(drone, next_node, edge_usage)
 
-        if not moved:
-            self.reroute_drone(drone)
+        can_move = (
+            self.occupancy[next_node] < self.capacity[next_node]
+        )
+
+        if can_move:
+            self.move_drone(drone, next_node, edge_usage)
+        else:
+            self.reroute_drone(drone, edge_usage)
 
         if drone.position == self.goal:
             drone.finished = True
@@ -140,13 +160,12 @@ class DroneSimulation:
         for drone in self.drones:
             print(f" D{drone.id}-", end="")
 
+            self.update_drone(drone, edge_usage)
             if drone.path[drone.path_index] == self.goal:
                 print(self.goal, end="")
                 continue
             else:
                 print(f"{drone.path[drone.path_index + 1]}", end="")
-
-            self.update_drone(drone, edge_usage)
 
         print()
 

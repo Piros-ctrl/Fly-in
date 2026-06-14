@@ -39,7 +39,10 @@ class SimulationWindow(tk.Tk):
         self.load_data()
         self.compute_bounds()
 
-        self.run()
+        self.bind("<Right>", self.next_turn)
+        self.bind("<Return>", self.exit_app)
+
+        self.focus_set()
 
     def load_data(self):
         for name, zone in self.simulation.graph.zones.items():
@@ -74,15 +77,16 @@ class SimulationWindow(tk.Tk):
             (y - cy) * scale + h / 2
         )
 
-    def run(self):
+    def next_turn(self, event=None):
         if self.simulation.finished < self.simulation.nb_drones:
             self.simulation.run_one_turn()
             self.turn_label.config(
                 text=f"Turn Number: {self.simulation.turns}"
             )
+            self.draw()
 
-        self.draw()
-        self.after(900, self.run)
+    def exit_app(self, event=None):
+        self.destroy()
 
     # ---------------- DRAW ----------------
 
