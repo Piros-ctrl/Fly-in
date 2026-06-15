@@ -43,6 +43,7 @@ class SimulationWindow(tk.Tk):
         self.bind("<Return>", self.exit_app)
 
         self.focus_set()
+        self.after(100, self.draw)
 
     def load_data(self):
         for name, zone in self.simulation.graph.zones.items():
