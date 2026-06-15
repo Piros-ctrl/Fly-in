@@ -59,11 +59,7 @@ class DroneSimulation:
         edge_capacity = self.graph.get_edge_capacity(edge)
         used = edge_usage.get(edge, 0)
 
-        if (
-            self.occupancy[next_node] < self.capacity[next_node]
-            and
-            used < edge_capacity
-        ):
+        if (used < edge_capacity):
             cost = self.graph.get_zone(next_node).get_cost()
 
             edge_usage[edge] = used + 1
@@ -114,16 +110,9 @@ class DroneSimulation:
         new_path = self.pathfinder.search(best_neighbor, self.goal)
 
         drone.set_new_path(new_path, best_neighbor)
-        self.move_drone(drone, best_neighbor, edge_usage)
         moved = self.move_drone(drone, best_neighbor, edge_usage)
         if moved:
             return True
-
-    def can_move(self, drone, next_node):
-        return (
-            not drone.is_in_transit()
-            and self.occupancy[next_node] < self.capacity[next_node]
-        )
 
     def update_drone(self, drone, edge_usage):
         if drone.finished:
@@ -143,9 +132,13 @@ class DroneSimulation:
             return
 
         next_node = drone.next_node()
+        edge = (drone.position, next_node)
+        edge_capacity = self.graph.get_edge_capacity(edge)
+        used = edge_usage.get(edge, 0)
 
         can_move = (
             self.occupancy[next_node] < self.capacity[next_node]
+            and used < edge_capacity
         )
 
         moved = False
@@ -156,7 +149,6 @@ class DroneSimulation:
 
         if moved:
             print(f" D{drone.id}-{next_node}", end="")
-
         if drone.position == self.goal:
             drone.finished = True
             self.finished += 1
