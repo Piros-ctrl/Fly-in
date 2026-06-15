@@ -113,8 +113,11 @@ class DroneSimulation:
 
         new_path = self.pathfinder.search(best_neighbor, self.goal)
 
-        drone.set_new_path(new_path)
+        drone.set_new_path(new_path, best_neighbor)
         self.move_drone(drone, best_neighbor, edge_usage)
+        moved = self.move_drone(drone, best_neighbor, edge_usage)
+        if moved:
+            return True
 
     def can_move(self, drone, next_node):
         return (
@@ -145,10 +148,14 @@ class DroneSimulation:
             self.occupancy[next_node] < self.capacity[next_node]
         )
 
+        moved = False
         if can_move:
-            self.move_drone(drone, next_node, edge_usage)
+            moved = self.move_drone(drone, next_node, edge_usage)
         else:
-            self.reroute_drone(drone, edge_usage)
+            moved = self.reroute_drone(drone, edge_usage)
+
+        if moved:
+            print(f" D{drone.id}-{next_node}", end="")
 
         if drone.position == self.goal:
             drone.finished = True
@@ -158,15 +165,7 @@ class DroneSimulation:
         edge_usage = {}
 
         for drone in self.drones:
-            print(f" D{drone.id}-", end="")
-
             self.update_drone(drone, edge_usage)
-            if drone.path[drone.path_index] == self.goal:
-                print(self.goal, end="")
-                continue
-            else:
-                print(f"{drone.path[drone.path_index + 1]}", end="")
-
         print()
 
         self.turns += 1

@@ -8,6 +8,7 @@ class MapParser:
         self.file_path = file_path
         self.argument_dict = {}
         self.zones = []
+        self.coords = []          # ← track used coordinates
         self.connections = []
         self.s_and_e = []
 
@@ -16,7 +17,6 @@ class MapParser:
     # ------------------------------------------------------------------ #
 
     def parse(self):
-        """Parse the file and return the argument dictionary."""
         self._validate_first_line()
         self._parse_lines()
         self._final_checks()
@@ -29,11 +29,9 @@ class MapParser:
     # ------------------------------------------------------------------ #
 
     def _clean_line(self, raw_line):
-        """Strip comments and whitespace from a raw line."""
         return raw_line.split('#', 1)[0].strip()
 
     def _validate_first_line(self):
-        """Enforce that the first non-empty line is nb_drones."""
         with open(self.file_path, 'r') as f:
             for raw_line in f:
                 line = self._clean_line(raw_line)
@@ -45,7 +43,6 @@ class MapParser:
         raise ValueError("The file is empty")
 
     def _parse_lines(self):
-        """Main line-by-line parsing loop."""
         with open(self.file_path, 'r') as f:
             for line_num, raw_line in enumerate(f, start=1):
                 line = self._clean_line(raw_line)
@@ -64,14 +61,35 @@ class MapParser:
                     self._handle_connection(line, line_num)
 
     def _final_checks(self):
-        """Validate overall structure after parsing."""
         if "nb_drones" not in self.argument_dict:
             raise ValueError(
                 "Missing required 'nb_drones' definition "
                 "(must be the first line)")
+        if "start_hub" not in self.argument_dict:
+            raise ValueError(
+                "Map must contain a start_hub")
+        if "end_hub" not in self.argument_dict:
+            raise ValueError(
+                "Map must contain an end_hub")
         if len(self.s_and_e) != 2:
             raise ValueError(
                 "Map must contain exactly one start_hub and one end_hub")
+
+    # ------------------------------------------------------------------ #
+    #  Shared zone registration                                            #
+    # ------------------------------------------------------------------ #
+
+    def _register_zone(self, name, x, y, line_num):
+        """Check for duplicate name and duplicate coords, then register."""
+        if name in self.zones:
+            raise ValueError(
+                f"Line {line_num}: Zone name '{name}' is already defined")
+        if (x, y) in self.coords:
+            raise ValueError(
+                f"Line {line_num}: Zone '{name}' has coordinates "
+                f"({x}, {y}) which are already used by another zone")
+        self.zones.append(name)
+        self.coords.append((x, y))
 
     # ------------------------------------------------------------------ #
     #  Line handlers                                                       #
@@ -102,9 +120,22 @@ class MapParser:
                 f"Line {line_num}: 'start_hub' cannot"
                 " be duplicated in the same file")
         name, x, y, metadata = self._parse_hub_line(line, line_num)
+
+        if metadata.get("zone") == "blocked":
+            raise ValueError(
+                f"Line {line_num}: start_hub '{name}'"
+                " cannot be a blocked zone")
+
+        nb_drones = self.argument_dict.get("nb_drones")
+        if nb_drones and metadata.get("max_drones", 1) < nb_drones:
+            raise ValueError(
+                f"Line {line_num}: start_hub '{name}' capacity "
+                f"({metadata['max_drones']}) is less than "
+                f"nb_drones ({nb_drones})")
+
+        self._register_zone(name, x, y, line_num)
         self.argument_dict["start_hub"] = name
         self.argument_dict[name] = {"coords": (x, y), "metadata": metadata}
-        self.zones.append(name)
         self.s_and_e.append(name)
 
     def _handle_end_hub(self, line, line_num):
@@ -113,21 +144,18 @@ class MapParser:
                 f"Line {line_num}: 'end_hub' cannot"
                 " be duplicated in the same file")
         name, x, y, metadata = self._parse_hub_line(line, line_num)
+
+        self._register_zone(name, x, y, line_num)
         self.argument_dict["end_hub"] = name
         self.argument_dict[name] = {"coords": (x, y), "metadata": metadata}
-        self.zones.append(name)
         self.s_and_e.append(name)
 
     def _handle_hub(self, line, line_num):
         name, x, y, metadata = self._parse_hub_line(line, line_num)
-        if name in self.zones:
-            raise ValueError(
-                f"Line {line_num}: Zone name '{name}' is duplicated")
+        self._register_zone(name, x, y, line_num)
         self.argument_dict[name] = {"coords": (x, y), "metadata": metadata}
-        self.zones.append(name)
 
     def _handle_connection(self, line, line_num):
-        # Split off metadata block if present
         if '[' in line:
             bracket_pos = line.index('[')
             main_part = line[:bracket_pos].strip()
@@ -163,7 +191,7 @@ class MapParser:
             if (
                 (zone_a == ex_a and zone_b == ex_b)
                 or (zone_a == ex_b and zone_b == ex_a)
-                    ):
+            ):
                 raise ValueError(
                     f"Line {line_num}: Connection "
                     f"'{zone_a}-{zone_b}' already defined "
@@ -178,7 +206,7 @@ class MapParser:
             if key not in self.ALLOWED_CONNECTION_KEYS:
                 raise ValueError(
                     f"Line {line_num}: Invalid connection metadata key '{key}'"
-                    )
+                )
 
         if 'max_link_capacity' in metadata:
             try:
@@ -198,7 +226,6 @@ class MapParser:
     # ------------------------------------------------------------------ #
 
     def _parse_hub_line(self, line, line_num):
-        # Parse a hub/start_hub/end_hub line and return (name, x, y, metadata)
         if '[' in line:
             bracket_pos = line.index('[')
             main_part = line[:bracket_pos].strip()
@@ -254,7 +281,6 @@ class MapParser:
         return name, x, y, metadata
 
     def _parse_metadata(self, meta_str, line_num):
-        """Parse a metadata block string like '[key=value key=value]'."""
         meta_str = meta_str.strip()
         if not meta_str.startswith('[') or not meta_str.endswith(']'):
             raise ValueError(f"Line {line_num}: Invalid metadata "

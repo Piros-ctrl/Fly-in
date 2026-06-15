@@ -105,12 +105,14 @@ class SimulationWindow(tk.Tk):
         for name, (bx, by) in self.nodes.items():
             x, y = self.to_screen(bx, by)
             color = self.zone_color[name]
-            if color.lower() == "rainbow":
-                color = "aqua"
 
             r = 14
-            self.canvas.create_oval(x-r, y-r, x+r, y+r,
-                                    fill=color, outline="white")
+            try:
+                self.canvas.create_oval(x-r, y-r, x+r, y+r,
+                                        fill=color, outline="white")
+            except Exception:
+                self.canvas.create_oval(x-r, y-r, x+r, y+r,
+                                        fill="aqua", outline="white")
 
             self.canvas.create_text(x, y + 20,
                                     text=name,

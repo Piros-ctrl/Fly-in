@@ -20,6 +20,7 @@ class Drone:
     def advance_path(self):
         self.path_index += 1
 
-    def set_new_path(self, path):
+    def set_new_path(self, path, position):
         self.path = path
         self.path_index = 0
+        self.position = position
