@@ -4,7 +4,7 @@ from manage_drones import DroneSimulation
 from visualisation import SimulationWindow
 
 
-def main():
+def main() -> None:
     try:
         config = argv[-1]
         x = MapParser(config)

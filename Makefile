@@ -2,7 +2,7 @@ PYTHON = python3
 MODULE = main.py
 MAP = maps/easy/01_linear_path.txt
 
-.PHONY: install run debug clean lint lint-strict
+.PHONY: run debug clean lint lint-strict
 
 run:
 	@echo "Running simulation..."
@@ -14,7 +14,7 @@ debug:
 
 clean:
 	@echo "Cleaning cache files..."
-	rm -rf src/__pycache__
+	rm -rf __pycache__
 	rm -rf .mypy_cache
 
 lint:
