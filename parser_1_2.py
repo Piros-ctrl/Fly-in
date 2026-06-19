@@ -119,7 +119,7 @@ class MapParser:
         if max_drones == 0:
             metadata["max_drones"] = nb_drones
         else:
-            if max_drones < nb_drones:
+            if int(max_drones) < nb_drones:
                 raise ValueError(
                     f"Line {line_num}: start_hub '{name}' capacity "
                     f"({max_drones}) is less than nb_drones ({nb_drones})"

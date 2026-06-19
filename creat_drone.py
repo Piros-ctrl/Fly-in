@@ -6,6 +6,7 @@ class Drone:
         self.path_index = 0
         self.finished = False
         self.turns_remaining = 0
+        self.res_zones = []
 
     def next_node(self) -> str:
         return self.path[self.path_index + 1]
@@ -20,6 +21,6 @@ class Drone:
         self.path_index += 1
 
     def set_new_path(self, path: list[str], position: str) -> None:
-        self.path = path
+        self.path = [position] + path
         self.path_index = 0
         self.position = position
