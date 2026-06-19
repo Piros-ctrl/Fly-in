@@ -154,7 +154,11 @@ class DroneSimulation:
                 if not moved:
                     moved = self.reroute_drone(drone, edge_usage)
                 if moved:
-                    print(f" D{drone.id}-{drone.position} {self.occupancy[drone.position]}/{self.capacity[drone.position]}", end="")
+                    if drone.position != self.goal:
+                        if self.graph.get_zone(drone.next_node()).get_zone_type() == "restricted":
+                            print(f" D{drone.id}:{drone.position}-{drone.next_node()}", end="")
+                        else:
+                            print(f" D{drone.id}:{drone.next_node()}", end="")
 
                 if drone.position == self.goal:
                     drone.finished = True
@@ -166,7 +170,11 @@ class DroneSimulation:
             moved = self.reroute_drone(drone, edge_usage)
 
         if moved:
-            print(f" D{drone.id}-{drone.position} {self.occupancy[drone.position]}/{self.capacity[drone.position]}", end="")
+            if drone.position != self.goal:
+                if self.graph.get_zone(drone.next_node()).get_zone_type() == "restricted":
+                    print(f" D{drone.id}:{drone.position}-{drone.next_node()}", end="")
+                else:
+                    print(f" D{drone.id}:{drone.next_node()}", end="")
         if drone.position == self.goal:
             drone.finished = True
             self.finished += 1
